@@ -24,7 +24,7 @@ func (m Model) View() string {
 
 	if m.state == bodyView {
 		s += "note:\n\n"
-		s += m.textInput.View() + "\n\n"
+		s += m.textArea.View() + "\n\n"
 		s += faintStyle.Render("ctrl+s - save, esc - discard")
 	}
 
