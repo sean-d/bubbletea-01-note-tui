@@ -9,7 +9,7 @@ import (
 
 // enumerated states for the Model
 const (
-	_ = iota
+	_ uint = iota
 	listView
 	titleView
 	bodyView
@@ -109,7 +109,6 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.textInput.Focus()      // give focus
 				m.currentNote = Note{}   // current note is now a new Note
 				m.state = titleView
-				// ... create a new note
 			case "up", "k":
 				// if the current highlighted note is not at the top of the list, move up.
 				if m.currentIndex > 0 {
@@ -123,13 +122,58 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			case "enter":
 				m.currentNote = m.notes[m.currentIndex] // set currentNote to be what is selected when pressing enter
 				m.textArea.SetValue(m.currentNote.Body) // set textArea to the body of the current note
+				m.state = bodyView                      // change state to view the note
 				m.textArea.Focus()                      // may as well give it focus
 				m.textArea.CursorEnd()                  // puts cursor at the end of the input field.
-				m.state = bodyView
+
 			}
+
 		case titleView:
+			switch key {
+			case "enter":
+				title := m.textInput.Value()
+				if title != "" {
+					m.currentNote.Title = title
+
+					m.state = bodyView // we change the view to bodyView with the above all set
+					// since we are creating a new note, we want the textarea blank and in focus, ready for a note
+					m.textArea.SetValue("")
+					m.textArea.Focus()
+					m.textArea.CursorEnd()
+				}
+
+			case "esc":
+				m.state = listView // cancel the currently viewed note and return to the list
+			}
 		case bodyView:
+			switch key {
+			case "ctrl+s":
+				body := m.textArea.Value()
+				m.currentNote.Body = body
+
+				var err error
+
+				if err = m.store.SaveNote(m.currentNote); err != nil {
+					// TODO: handle error better
+					return m, tea.Quit
+				}
+
+				m.notes, err = m.store.GetNotes() // refresh all notes; this will include the one we just saved
+
+				if err != nil {
+					// TODO: handle error better
+					return m, tea.Quit
+				}
+
+				//m.currentNote = Note{} // we finished saving our note; we make the current note a blank one
+
+				m.state = listView // return to listView
+
+			case "esc":
+				m.state = listView // cancel the currently viewed note and return to the list
+			}
 		}
 	}
+
 	return m, tea.Batch(commands...)
 }

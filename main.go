@@ -6,9 +6,7 @@ import (
 )
 
 func main() {
-	store := &Store{
-		conn: nil,
-	} // initialize a store
+	store := new(Store)
 
 	if err := store.Init(); err != nil {
 		log.Fatalf("unable to init store: %v, err")
