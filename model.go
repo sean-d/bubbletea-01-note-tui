@@ -7,7 +7,7 @@ import (
 	"log"
 )
 
-// enumerated states for the model
+// enumerated states for the Model
 const (
 	_ = iota
 	listView
@@ -16,7 +16,7 @@ const (
 )
 
 /*
-	model
+	Model
 
 state: see const above. default to listView
 store: the db where notes are stored
@@ -26,7 +26,7 @@ currentIndex: when scrolling up and down through notes, this represents the acti
 textArea: textarea.Model used for the content display of a note
 textInput: textinput.Model used for entering the title of a note being created
 */
-type model struct {
+type Model struct {
 	state        uint
 	store        *Store
 	notes        []Note
@@ -36,15 +36,15 @@ type model struct {
 	textInput    textinput.Model
 }
 
-// NewModel takes in a datastore and returns a model using said Store that contains all available notes.
-func NewModel(store *Store) model {
+// NewModel takes in a datastore and returns a Model using said Store that contains all available notes.
+func NewModel(store *Store) Model {
 	notes, err := store.GetNotes()
 
 	if err != nil {
-		log.Fatalf("uanble to get notes when creating a model: %v", err)
+		log.Fatalf("uanble to get notes when creating a Model: %v", err)
 	}
 
-	return model{
+	return Model{
 		state:     listView,
 		store:     store,
 		notes:     notes,
@@ -55,12 +55,12 @@ func NewModel(store *Store) model {
 
 // Init can return a Cmd that could perform some initial I/O. For now, we don't need to do any I/O, so for the command,
 // we'll just return nil, which translates to "no command."
-func (m model) Init() tea.Cmd {
+func (m Model) Init() tea.Cmd {
 	return nil
 }
 
 /*
-Update is called when "things happen." Its job is to look at what has happened and return an updated model in response.
+Update is called when "things happen." Its job is to look at what has happened and return an updated Model in response.
 It can also return a Cmd to make more things happen, but for now don't worry about that part.
 
 In our case, when a user presses the down arrow, Update’s job is to notice that the down arrow was pressed and move
@@ -74,17 +74,17 @@ We usually figure out which type of Msg we received with a type switch, but you 
 
 
 what is happening below:
-- we update the model's text area and input with the supplied message, assigning the update text accordingly and capturing the cmd
+- we update the Model's text area and input with the supplied message, assigning the update text accordingly and capturing the cmd
 - we put the returned command into a slice
 - switching:
 -- switch based on msg type and look for KeyMsg (key presses)
 -- string representation of the keypress is saved in key
 -- switch on the current state as different keys will mean different things based on what state is current
 -- switch on the key that was pressed and provide functionality based on that key value
-- return the model and all commands via Batch
+- return the Model and all commands via Batch
 */
 
-func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	var (
 		commands []tea.Cmd
 		command  tea.Cmd
@@ -126,7 +126,6 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.textArea.Focus()                      // may as well give it focus
 				m.textArea.CursorEnd()                  // puts cursor at the end of the input field.
 				m.state = bodyView
-				// show contents of note
 			}
 		case titleView:
 		case bodyView:
