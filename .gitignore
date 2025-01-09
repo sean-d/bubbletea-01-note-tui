@@ -24,7 +24,8 @@ go.work.sum
 # env file
 .env
 
-.idea/
-
 # sqlite3 db
 notes.db
+
+# built binary
+notes-test

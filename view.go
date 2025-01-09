@@ -13,6 +13,7 @@ var (
 )
 
 func (m Model) View() string {
+
 	s := appNameStyle.Render("NOTES APP") + "\n\n"
 
 	if m.state == listView {
