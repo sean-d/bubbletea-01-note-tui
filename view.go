@@ -20,13 +20,14 @@ func (m Model) View() string {
 	s := appNameStyle.Render("THE MOST BAREBONES BUBBLETEA MINIMUM VIABLE SOLUTION NOTES APP") + "\n\n"
 
 	if m.state == addNoteView {
-		s += "note title:\n\n"
-		s += m.textInput.View() + "\n\n"
-		s += bottomMenuStyle.Render("enter - submit title, esc - discard")
+		//s += "note title:\n\n"
+		s += fmt.Sprintf("%s\n\n", noteTitleStyle.Render("note title:"))
+		s += m.textInput.View()
+		s += bottomMenuStyle.Render("\n\nenter - submit title, esc - discard")
 	}
 
 	if m.state == noteView {
-		s += fmt.Sprintf("%s:\n\n", noteTitleStyle.Render(m.currentNote.Title))
+		s += fmt.Sprintf("%s\n\n", noteTitleStyle.Render(m.currentNote.Title+":"))
 		s += m.textArea.View() + "\n\n"
 		s += bottomMenuStyle.Render("ctrl+s - save, , ctrl+d - delete, esc - discard")
 	}

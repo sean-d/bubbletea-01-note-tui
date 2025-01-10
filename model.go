@@ -123,7 +123,8 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					m.currentIndex += 1
 				}
 			case "enter":
-				m.currentNote = m.notes[m.currentIndex] // set currentNote to be what is selected when pressing enter
+
+				m.currentNote = m.notes[m.currentIndex]
 				m.textArea.SetValue(m.currentNote.Body) // set textArea to the body of the current note
 				m.state = noteView                      // change state to view the note
 				m.textArea.Focus()                      // may as well give it focus
@@ -176,19 +177,6 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 			case "ctrl+d":
 				m.state = deleteView
-				//	body := m.textArea.Value()
-				//	m.currentNote.Body = body
-				//
-				//	var err error
-				//
-				//	if err = m.store.DeleteNote(m.currentNote); err != nil {
-				//		return m, tea.Quit
-				//	}
-				//
-				//	m.state = listView // cancel the currently viewed note and return to the list
-				//
-				//case "esc":
-				//	m.state = listView // cancel the currently viewed note and return to the list
 			}
 		case deleteView:
 			switch key {
