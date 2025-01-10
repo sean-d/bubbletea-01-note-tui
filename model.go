@@ -11,8 +11,9 @@ import (
 const (
 	_ uint = iota
 	listView
-	titleView
-	bodyView
+	addNoteView
+	noteView
+	deleteView
 )
 
 /*
@@ -27,7 +28,8 @@ textArea: textarea.Model used for the content display of a note
 textInput: textinput.Model used for entering the title of a note being created
 */
 type Model struct {
-	state        uint
+	state uint
+	//currentState uint
 	store        *Store
 	notes        []Note
 	currentNote  Note
@@ -45,7 +47,8 @@ func NewModel(store *Store) Model {
 	}
 
 	return Model{
-		state:     listView,
+		state: listView,
+		//currentState: listView,
 		store:     store,
 		notes:     notes,
 		textArea:  textarea.New(),
@@ -102,13 +105,13 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		switch m.state {
 		case listView:
 			switch key {
-			case "q":
+			case "q", "esc":
 				return m, tea.Quit
 			case "n":
 				m.textInput.SetValue("") // clear value...
 				m.textInput.Focus()      // give focus
 				m.currentNote = Note{}   // current note is now a new Note
-				m.state = titleView
+				m.state = addNoteView
 			case "up", "k":
 				// if the current highlighted note is not at the top of the list, move up.
 				if m.currentIndex > 0 {
@@ -122,20 +125,20 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			case "enter":
 				m.currentNote = m.notes[m.currentIndex] // set currentNote to be what is selected when pressing enter
 				m.textArea.SetValue(m.currentNote.Body) // set textArea to the body of the current note
-				m.state = bodyView                      // change state to view the note
+				m.state = noteView                      // change state to view the note
 				m.textArea.Focus()                      // may as well give it focus
 				m.textArea.CursorEnd()                  // puts cursor at the end of the input field.
 
 			}
 
-		case titleView:
+		case addNoteView:
 			switch key {
 			case "enter":
 				title := m.textInput.Value()
 				if title != "" {
 					m.currentNote.Title = title
 
-					m.state = bodyView // we change the view to bodyView with the above all set
+					m.state = noteView // we change the view to bodyView with the above all set
 					// since we are creating a new note, we want the textarea blank and in focus, ready for a note
 					m.textArea.SetValue("")
 					m.textArea.Focus()
@@ -145,8 +148,12 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			case "esc":
 				m.state = listView // cancel the currently viewed note and return to the list
 			}
-		case bodyView:
+
+		case noteView:
 			switch key {
+			case "esc":
+				m.state = listView
+
 			case "ctrl+s":
 				body := m.textArea.Value()
 				m.currentNote.Body = body
@@ -165,13 +172,49 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					return m, tea.Quit
 				}
 
-				//m.currentNote = Note{} // we finished saving our note; we make the current note a blank one
-
 				m.state = listView // return to listView
 
-			case "esc":
-				m.state = listView // cancel the currently viewed note and return to the list
+			case "ctrl+d":
+				m.state = deleteView
+				//	body := m.textArea.Value()
+				//	m.currentNote.Body = body
+				//
+				//	var err error
+				//
+				//	if err = m.store.DeleteNote(m.currentNote); err != nil {
+				//		return m, tea.Quit
+				//	}
+				//
+				//	m.state = listView // cancel the currently viewed note and return to the list
+				//
+				//case "esc":
+				//	m.state = listView // cancel the currently viewed note and return to the list
 			}
+		case deleteView:
+			switch key {
+			case "ctrl+d":
+				body := m.textArea.Value()
+				m.currentNote.Body = body
+
+				var err error
+
+				if err = m.store.DeleteNote(m.currentNote); err != nil {
+					return m, tea.Quit
+				}
+
+				m.notes, err = m.store.GetNotes() // refresh all notes; this will remove the note just deleted
+
+				if err != nil {
+					// TODO: handle error better
+					return m, tea.Quit
+				}
+
+				m.state = listView // return to the default view
+
+			case "esc":
+				m.state = noteView // cancel the pending deletion and return to the note
+			}
+
 		}
 	}
 
