@@ -1,4 +1,4 @@
-# notes-tui
+# notes tui app
 Project demonstrating a basic use of bubbletea and other charm doodads.
 
 ## Dependencies
