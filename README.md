@@ -3,6 +3,7 @@ Project demonstrating a basic use of bubbletea and other charm doodads.
 
 ## Dependencies
 * Go
+* SQLite3
 * SQLite3 driver
   * `go get github.com/mattn/go-sqlite3`
 * Bubbletea
